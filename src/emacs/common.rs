@@ -28,7 +28,9 @@ pub fn find_emacs() -> PathBuf {
 pub fn run_emacscli<S>(path: &Path, args: &[S]) where S: AsRef<OsStr> {
     let mut command = Command::new(PathBuf::from(path));
     if args.is_empty() {
-        command.arg("-e").arg("(raise-frame)");
+        command
+            .arg("-e")
+            .arg("(select-frame-set-input-focus (selected-frame))");
     } else {
         command.arg("-n").args(args);
     }

@@ -1,3 +1,4 @@
+use std::io::{stderr,Write};
 use std::env;
 use std::ffi::OsStr;
 use std::path::{Path,PathBuf};
@@ -5,6 +6,17 @@ use std::process;
 use std::process::Command;
 
 use emacs::EMACS_CMD;
+
+macro_rules! die {
+    ($fmt:expr) => {{
+        let _ = writeln!(stderr(), $fmt);
+        process::exit(1);
+    }};
+    ($fmt:expr, $($arg:tt)*) => {{
+        let _ = writeln!(stderr(), $fmt, $($arg)*);
+        process::exit(1);
+    }};
+}
 
 fn find_command_by_current_process() -> Option<PathBuf> {
     env::current_exe()
@@ -34,12 +46,23 @@ pub fn run_emacscli<S>(path: &Path, args: &[S]) where S: AsRef<OsStr> {
     } else {
         command.arg("-n").args(args);
     }
-    let status = command
-        .spawn()
-        .and_then(|mut p| p.wait())
-        .map(|s| s.code().unwrap_or(1))
-        .unwrap_or(1);
-    if status != 0 {
-        process::exit(1);
+    let result = command.status();
+    match result {
+        Ok(status) => {
+            if !status.success() {
+                match status.code() {
+                    Some(code) =>
+                        die!("{}: process exited with code {}",
+                             path.display(), code),
+                    None =>
+                        die!("{}: process exited by signal",
+                             path.display())
+                }
+            }
+        },
+        Err(err) => {
+            die!("{}: {}", path.display(), err);
+        }
     }
 }
+

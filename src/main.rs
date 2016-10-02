@@ -1,5 +1,9 @@
 #[cfg(unix)]
 extern crate libc;
+#[cfg(windows)]
+extern crate winapi;
+#[cfg(windows)]
+extern crate kernel32;
 
 use std::ffi::OsString;
 

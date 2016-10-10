@@ -35,3 +35,7 @@ pub fn is_server_running() -> Option<PathBuf> {
         None
     }
 }
+
+pub fn show_message(msg: &str) {
+    let _ = writeln!(stderr(), "ew: {}", msg);
+}

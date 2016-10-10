@@ -8,20 +8,19 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, exit};
 use std::ptr;
 
-use winapi::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
 use winapi::minwindef::{DWORD, FALSE};
+use winapi::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
+use winapi::winuser::MB_OK;
 use kernel32::{K32GetModuleFileNameExW, OpenProcess};
+use user32::MessageBoxW;
 
 pub const EMACS_CMD: &'static str = "runemacs.exe";
 pub const EMACSCLI_CMD: &'static str = "emacsclient.exe";
 
-pub fn run_emacs<S>(path: &Path, args: &[S]) where S: AsRef<OsStr> {
-    let child = Command::new(path)
-        .args(args)
-        .spawn();
-    if child.is_err() {
-        exit(1);
-    }
+pub fn run_emacs<S>(path: &Path, args: &[S]) -> Result<()>
+    where S: AsRef<OsStr> {
+
+    Command::new(path) .args(args).spawn().map(|_| ())
 }
 
 pub fn is_server_running() -> Option<PathBuf> {
@@ -42,6 +41,20 @@ pub fn is_server_running() -> Option<PathBuf> {
                     pb
                 })
         })
+}
+
+pub fn show_message(msg: &str) {
+    let m = str_to_u16v(msg).as_ptr();
+    let p = str_to_u16v("ew").as_ptr();
+    unsafe {
+        let _ = MessageBoxW(ptr::null_mut(), m, p, MB_OK);
+    }
+}
+
+fn str_to_u16v(s: &str) -> Vec<u16> {
+    let mut v: Vec<u16> = s.encode_utf16().collect();
+    v.push(0);
+    v
 }
 
 const U_MAX_PATH: DWORD = 32767;
@@ -70,7 +83,7 @@ fn read_pid_from_server_file() -> Option<DWORD> {
         match read_pid(&p) {
             Ok(pid)  => Some(pid),
             Err(err) => {
-                println!("{}", err);
+                show_message(&format!("{}", err));
                 exit(1)
             }
         }

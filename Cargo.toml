@@ -9,6 +9,7 @@ libc = "*"
 [target.'cfg(windows)'.dependencies]
 winapi = "*"
 kernel32-sys = "*"
+user32-sys = "*"
 
 [[bin]]
 name = "ew"

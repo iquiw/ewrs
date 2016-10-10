@@ -4,6 +4,8 @@ extern crate libc;
 extern crate winapi;
 #[cfg(windows)]
 extern crate kernel32;
+#[cfg(windows)]
+extern crate user32;
 
 use std::ffi::OsString;
 
@@ -14,13 +16,16 @@ fn main() {
         .skip(1)
         .collect();
 
-    match emacs::is_server_running() {
+    let result = match emacs::is_server_running() {
         Some(path) => {
-            emacs::run_emacscli(&path, &args[..]);
+            emacs::run_emacscli(&path, &args[..])
         },
         None => {
             let path = emacs::find_emacs();
-            emacs::run_emacs(&path, &args[..]);
+            emacs::run_emacs(&path, &args[..])
         }
+    };
+    if let Err(err) = result {
+        emacs::show_message(&format!("{}", err));
     }
 }

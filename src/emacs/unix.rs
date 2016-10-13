@@ -1,26 +1,27 @@
 use std::ffi::OsStr;
-use std::path::{Path,PathBuf};
-use std::process;
+use std::io::{Error, ErrorKind, Result, Write, stderr};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use libc::{fork,getuid,setsid};
+use libc::{fork, getuid, setsid};
 
 pub const EMACS_CMD: &'static str = "emacs";
 pub const EMACSCLI_CMD: &'static str = "emacsclient";
 
-pub fn run_emacs<S>(path: &Path, args: &[S])
+pub fn run_emacs<S>(path: &Path, args: &[S]) -> Result<()>
     where S: AsRef<OsStr> {
     unsafe {
-        if fork() != 0 {
-            return;
+        let pid = fork();
+        if pid > 0 {
+            return Ok(());
+        } else if pid < 0 {
+            return Err(Error::new(ErrorKind::Other, "fork failed"));
         }
         let _ = setsid();
     }
     let mut command = Command::new(path);
-    let child = command.arg("-f").arg("server-start").args(args).spawn();
-    if child.is_err() {
-        process::exit(1);
-    }
+    command.arg("-f").arg("server-start").args(args).spawn()
+        .map(|_| ())
 }
 
 pub fn is_server_running() -> Option<PathBuf> {

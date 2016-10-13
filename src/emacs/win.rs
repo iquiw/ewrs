@@ -98,9 +98,9 @@ fn read_pid<P>(p: P) -> Result<DWORD> where P: AsRef<Path> {
     let mut line = String::new();
     let _ = try!(br.read_line(&mut line));
     line.split_whitespace().nth(1)
-        .ok_or(Error::new(ErrorKind::InvalidData, "No pid part"))
-        .and_then(|s| s.parse().or(
-            Err(Error::new(ErrorKind::InvalidData, "Not a number"))))
+        .ok_or_else(|| Error::new(ErrorKind::InvalidData, "No pid part"))
+        .and_then(|s| s.parse().or_else(
+            |_| Err(Error::new(ErrorKind::InvalidData, "Not a number"))))
 }
 
 #[test]

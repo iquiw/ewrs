@@ -22,7 +22,7 @@ pub fn find_emacs() -> PathBuf {
                 None
             }
         })
-        .unwrap_or(PathBuf::from(EMACS_CMD))
+        .unwrap_or_else(|| PathBuf::from(EMACS_CMD))
 }
 
 pub fn run_emacscli<S>(path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr> {
@@ -39,9 +39,9 @@ pub fn run_emacscli<S>(path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsS
         Ok(())
     } else {
         status.code()
-            .ok_or(Error::new(ErrorKind::Interrupted,
-                              format!("{}: process exited by signal",
-                                      path.display())))
+            .ok_or_else(|| Error::new(ErrorKind::Interrupted,
+                                      format!("{}: process exited by signal",
+                                              path.display())))
             .and_then(|code| {
                 Err(Error::new(ErrorKind::Other,
                                format!("{}: process exited with code {}",

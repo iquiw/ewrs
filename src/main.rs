@@ -10,22 +10,26 @@ extern crate user32;
 use std::ffi::OsString;
 
 mod emacs;
+use emacs::OSEmacs;
+use emacs::common::Emacs;
 
 fn main() {
     let args: Vec<OsString> = std::env::args_os()
         .skip(1)
         .collect();
 
-    let result = match emacs::is_server_running() {
+    let emacs = OSEmacs::new();
+
+    let result = match emacs.is_server_running() {
         Some(path) => {
-            emacs::run_emacscli(&path, &args[..])
+            emacs.run_client(&path, &args[..])
         },
         None => {
-            let path = emacs::find_emacs();
-            emacs::run_emacs(&path, &args[..])
+            let path = emacs.find_path();
+            emacs.run_server(&path, &args[..])
         }
     };
     if let Err(err) = result {
-        emacs::show_message(&format!("{}", err));
+        OSEmacs::show_message(&format!("{}", err));
     }
 }

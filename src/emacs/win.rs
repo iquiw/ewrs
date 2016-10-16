@@ -5,7 +5,7 @@ use std::mem;
 use std::io::{Error, ErrorKind, Result};
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::process::{Command, exit};
+use std::process;
 use std::ptr;
 
 use winapi::minwindef::{DWORD, FALSE};
@@ -14,40 +14,53 @@ use winapi::winuser::MB_OK;
 use kernel32::{K32GetModuleFileNameExW, OpenProcess};
 use user32::MessageBoxW;
 
-pub const EMACS_CMD: &'static str = "runemacs.exe";
-pub const EMACSCLI_CMD: &'static str = "emacsclient.exe";
+use emacs::common::Emacs;
 
-pub fn run_emacs<S>(path: &Path, args: &[S]) -> Result<()>
-    where S: AsRef<OsStr> {
+const EMACS_CMD: &'static str = "runemacs.exe";
+const EMACSCLI_CMD: &'static str = "emacsclientw.exe";
 
-    Command::new(path) .args(args).spawn().map(|_| ())
+pub struct WinEmacs {
 }
 
-pub fn is_server_running() -> Option<PathBuf> {
-    read_pid_from_server_file()
-        .and_then(|pid| {
-            let path = get_process_path(pid);
-            path.file_name()
-                .and_then(|name| {
-                    if name == "emacs.exe" {
-                        path.parent()
-                    } else {
-                        None
-                    }
-                })
-                .map(|p| {
-                    let mut pb = p.to_path_buf();
-                    pb.push(EMACSCLI_CMD);
-                    pb
-                })
+impl<'a> Emacs<'a> for WinEmacs {
+    fn new() -> Self { WinEmacs {} }
+
+    fn emacs_cmd(&self) -> &'a str { EMACS_CMD }
+
+    fn is_server_running(&self) -> Option<PathBuf> {
+        read_pid_from_server_file()
+            .and_then(|pid| {
+                let path = get_process_path(pid);
+                path.file_name()
+                    .and_then(|name| {
+                        if name == "emacs.exe" {
+                            path.parent()
+                        } else {
+                            None
+                        }
+                    })
+                    .map(|p| {
+                        let mut pb = p.to_path_buf();
+                        pb.push(EMACSCLI_CMD);
+                        pb
+                    })
+            })
+    }
+
+    fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr> {
+        WinEmacs::run_server_cmd(path, args).map(|mut child| {
+            if let Err(err) = child.wait() {
+                WinEmacs::show_message(&format!("{}", err));
+            }
         })
-}
+    }
 
-pub fn show_message(msg: &str) {
-    let m = str_to_u16v(msg).as_ptr();
-    let p = str_to_u16v("ew").as_ptr();
-    unsafe {
-        let _ = MessageBoxW(ptr::null_mut(), m, p, MB_OK);
+    fn show_message(msg: &str) {
+        let m = str_to_u16v(msg).as_ptr();
+        let p = str_to_u16v("ew").as_ptr();
+        unsafe {
+            let _ = MessageBoxW(ptr::null_mut(), m, p, MB_OK);
+        }
     }
 }
 
@@ -83,8 +96,8 @@ fn read_pid_from_server_file() -> Option<DWORD> {
         match read_pid(&p) {
             Ok(pid)  => Some(pid),
             Err(err) => {
-                show_message(&format!("{}", err));
-                exit(1)
+                WinEmacs::show_message(&format!("{}", err));
+                process::exit(1)
             }
         }
     } else {

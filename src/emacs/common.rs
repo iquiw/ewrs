@@ -2,7 +2,7 @@ use std::io::{Error, ErrorKind, Result};
 use std::env;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Child, Command};
 
 pub trait Emacs<'a> {
     fn new() -> Self;
@@ -50,6 +50,11 @@ pub trait Emacs<'a> {
     }
 
     fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr>;
+
+    fn run_server_cmd<S>(path: &Path, args: &[S]) -> Result<Child> where S: AsRef<OsStr> {
+        let mut command = Command::new(path);
+        command.arg("-f").arg("server-start").args(args).spawn()
+    }
 
     fn show_message(msg: &str);
 }

@@ -41,9 +41,7 @@ impl<'a> Emacs<'a> for UnixEmacs {
             }
             let _ = setsid();
         }
-        let mut command = Command::new(path);
-        command.arg("-f").arg("server-start").args(args).spawn()
-            .map(|_| ())
+        UnixEmacs::run_server_cmd(path, args).map(|_| ())
     }
 
     fn show_message(msg: &str) {

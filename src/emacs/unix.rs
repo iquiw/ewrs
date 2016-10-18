@@ -1,7 +1,6 @@
 use std::ffi::OsStr;
 use std::io::{Error, ErrorKind, Result, Write, stderr};
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 use libc::{fork, getuid, setsid};
 

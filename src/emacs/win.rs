@@ -13,6 +13,7 @@ use winapi::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
 use winapi::winuser::MB_OK;
 use kernel32::{K32GetModuleFileNameExW, OpenProcess};
 use user32::MessageBoxW;
+use widestring::WideCString;
 
 use emacs::common::Emacs;
 
@@ -56,18 +57,16 @@ impl<'a> Emacs<'a> for WinEmacs {
     }
 
     fn show_message(msg: &str) {
-        let m = str_to_u16v(msg).as_ptr();
-        let p = str_to_u16v("ew").as_ptr();
+        let m = str_to_widec(msg).into_raw();
+        let p = str_to_widec("ew").into_raw();
         unsafe {
             let _ = MessageBoxW(ptr::null_mut(), m, p, MB_OK);
         }
     }
 }
 
-fn str_to_u16v(s: &str) -> Vec<u16> {
-    let mut v: Vec<u16> = s.encode_utf16().collect();
-    v.push(0);
-    v
+fn str_to_widec(s: &str) -> WideCString {
+    WideCString::from_str(s).expect("Message contains nul")
 }
 
 const U_MAX_PATH: DWORD = 32767;

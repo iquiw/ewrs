@@ -10,6 +10,7 @@ libc = "*"
 winapi = "*"
 kernel32-sys = "*"
 user32-sys = "*"
+widestring = "*"
 
 [[bin]]
 name = "ew"

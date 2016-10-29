@@ -6,6 +6,7 @@ use std::io::{Error, ErrorKind, Result};
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::process;
+use std::process::{Command, Stdio};
 use std::ptr;
 
 use winapi::minwindef::{DWORD, FALSE};
@@ -46,6 +47,14 @@ impl<'a> Emacs<'a> for WinEmacs {
                         pb
                     })
             })
+    }
+
+    fn new_command<P: AsRef<OsStr>>(path: P) -> Command {
+        let mut command = Command::new(path);
+        command.stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        command
     }
 
     fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr> {

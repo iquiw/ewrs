@@ -24,8 +24,12 @@ pub trait Emacs<'a> {
 
     fn is_server_running(&self) -> Option<PathBuf>;
 
+    fn new_command<P: AsRef<OsStr>>(path: P) -> Command {
+        Command::new(path)
+    }
+
     fn run_client<S>(&self, path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr> {
-        let mut command = Command::new(PathBuf::from(path));
+        let mut command = Self::new_command(PathBuf::from(path));
         if args.is_empty() {
             command
                 .arg("-e")
@@ -52,7 +56,7 @@ pub trait Emacs<'a> {
     fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr>;
 
     fn run_server_cmd<S>(path: &Path, args: &[S]) -> Result<Child> where S: AsRef<OsStr> {
-        let mut command = Command::new(path);
+        let mut command = Self::new_command(path);
         command.arg("-f").arg("server-start").args(args).spawn()
     }
 

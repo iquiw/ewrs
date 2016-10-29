@@ -12,10 +12,10 @@ const EMACSCLI_CMD: &'static str = "emacsclient";
 pub struct UnixEmacs {
 }
 
-impl<'a> Emacs<'a> for UnixEmacs {
+impl Emacs for UnixEmacs {
     fn new() -> Self { UnixEmacs {} }
 
-    fn emacs_cmd(&self) -> &'a str { EMACS_CMD }
+    fn emacs_cmd(&self) -> &str { EMACS_CMD }
 
     fn is_server_running(&self) -> Option<PathBuf> {
         let mut path = PathBuf::from("/tmp");

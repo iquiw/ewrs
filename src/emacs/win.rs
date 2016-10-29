@@ -24,10 +24,10 @@ const EMACSCLI_CMD: &'static str = "emacsclientw.exe";
 pub struct WinEmacs {
 }
 
-impl<'a> Emacs<'a> for WinEmacs {
+impl Emacs for WinEmacs {
     fn new() -> Self { WinEmacs {} }
 
-    fn emacs_cmd(&self) -> &'a str { EMACS_CMD }
+    fn emacs_cmd(&self) -> &str { EMACS_CMD }
 
     fn is_server_running(&self) -> Option<PathBuf> {
         read_pid_from_server_file()

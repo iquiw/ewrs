@@ -4,10 +4,10 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
 
-pub trait Emacs<'a> {
+pub trait Emacs {
     fn new() -> Self;
 
-    fn emacs_cmd(&self) -> &'a str;
+    fn emacs_cmd(&self) -> &str;
 
     fn find_path(&self) -> PathBuf {
         find_command_by_current_process()

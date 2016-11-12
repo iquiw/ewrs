@@ -117,10 +117,10 @@ fn read_pid_from_server_file() -> Option<DWORD> {
 fn read_pid<P>(p: P) -> Result<DWORD>
     where P: AsRef<Path>
 {
-    let f = try!(File::open(p));
+    let f = File::open(p)?;
     let mut br = BufReader::new(f);
     let mut line = String::new();
-    let _ = try!(br.read_line(&mut line));
+    let _ = br.read_line(&mut line)?;
     line.split_whitespace().nth(1)
         .ok_or_else(|| Error::new(ErrorKind::InvalidData, "No pid part"))
         .and_then(|s| s.parse().or_else(

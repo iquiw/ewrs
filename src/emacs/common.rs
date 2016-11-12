@@ -34,7 +34,7 @@ pub trait Emacs {
         } else {
             command.arg("-n").args(args);
         }
-        let status = try!(command.status());
+        let status = command.status()?;
         if status.success() {
             Ok(())
         } else {

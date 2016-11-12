@@ -13,9 +13,13 @@ pub struct UnixEmacs {
 }
 
 impl Emacs for UnixEmacs {
-    fn new() -> Self { UnixEmacs {} }
+    fn new() -> Self {
+        UnixEmacs {}
+    }
 
-    fn emacs_cmd(&self) -> &str { EMACS_CMD }
+    fn emacs_cmd(&self) -> &str {
+        EMACS_CMD
+    }
 
     fn is_server_running(&self) -> Option<PathBuf> {
         let mut path = PathBuf::from("/tmp");
@@ -30,7 +34,9 @@ impl Emacs for UnixEmacs {
         }
     }
 
-    fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr> {
+    fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()>
+        where S: AsRef<OsStr>
+    {
         unsafe {
             let pid = fork();
             if pid > 0 {

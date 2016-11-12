@@ -23,9 +23,7 @@ fn main() {
     let emacs = OSEmacs::new();
 
     let result = match emacs.is_server_running() {
-        Some(path) => {
-            emacs.run_client(&path, &args[..])
-        },
+        Some(path) => emacs.run_client(&path, &args[..]),
         None => {
             let path = emacs.find_path();
             emacs.run_server(&path, &args[..])

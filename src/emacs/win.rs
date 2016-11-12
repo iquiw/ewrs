@@ -25,28 +25,31 @@ pub struct WinEmacs {
 }
 
 impl Emacs for WinEmacs {
-    fn new() -> Self { WinEmacs {} }
+    fn new() -> Self {
+        WinEmacs {}
+    }
 
-    fn emacs_cmd(&self) -> &str { EMACS_CMD }
+    fn emacs_cmd(&self) -> &str {
+        EMACS_CMD
+    }
 
     fn is_server_running(&self) -> Option<PathBuf> {
-        read_pid_from_server_file()
-            .and_then(|pid| {
-                let path = get_process_path(pid);
-                path.file_name()
-                    .and_then(|name| {
-                        if name == "emacs.exe" {
-                            path.parent()
-                        } else {
-                            None
-                        }
-                    })
-                    .map(|p| {
-                        let mut pb = p.to_path_buf();
-                        pb.push(EMACSCLI_CMD);
-                        pb
-                    })
-            })
+        read_pid_from_server_file().and_then(|pid| {
+            let path = get_process_path(pid);
+            path.file_name()
+                .and_then(|name| {
+                    if name == "emacs.exe" {
+                        path.parent()
+                    } else {
+                        None
+                    }
+                })
+                .map(|p| {
+                    let mut pb = p.to_path_buf();
+                    pb.push(EMACSCLI_CMD);
+                    pb
+                })
+        })
     }
 
     fn new_command<P: AsRef<OsStr>>(path: P) -> Command {
@@ -57,7 +60,9 @@ impl Emacs for WinEmacs {
         command
     }
 
-    fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()> where S: AsRef<OsStr> {
+    fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()>
+        where S: AsRef<OsStr>
+    {
         WinEmacs::run_server_cmd(path, args).map(|mut child| {
             if let Err(err) = child.wait() {
                 WinEmacs::show_message(&format!("{}", err));
@@ -82,13 +87,9 @@ const U_MAX_PATH: DWORD = 32767;
 
 fn get_process_path(pid: DWORD) -> PathBuf {
     unsafe {
-        let h = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-                            FALSE, pid);
+        let h = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
         let mut v: [u16; U_MAX_PATH as usize] = mem::uninitialized();
-        let nread = K32GetModuleFileNameExW(h,
-                                            ptr::null_mut(),
-                                            v.as_mut_ptr(),
-                                            U_MAX_PATH);
+        let nread = K32GetModuleFileNameExW(h, ptr::null_mut(), v.as_mut_ptr(), U_MAX_PATH);
         PathBuf::from(String::from_utf16_lossy(&v[0..(nread as usize)]))
     }
 }
@@ -102,7 +103,7 @@ fn read_pid_from_server_file() -> Option<DWORD> {
     p.push("server");
     if p.is_file() {
         match read_pid(&p) {
-            Ok(pid)  => Some(pid),
+            Ok(pid) => Some(pid),
             Err(err) => {
                 WinEmacs::show_message(&format!("{}", err));
                 process::exit(1)
@@ -113,7 +114,9 @@ fn read_pid_from_server_file() -> Option<DWORD> {
     }
 }
 
-fn read_pid<P>(p: P) -> Result<DWORD> where P: AsRef<Path> {
+fn read_pid<P>(p: P) -> Result<DWORD>
+    where P: AsRef<Path>
+{
     let f = try!(File::open(p));
     let mut br = BufReader::new(f);
     let mut line = String::new();

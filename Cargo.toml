@@ -1,6 +1,6 @@
 [package]
 name = "ewrs"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Iku Iwasa <iku.iwasa@gmail.com>"]
 build = "build.rs"
 

@@ -13,5 +13,9 @@ kernel32-sys = "*"
 user32-sys = "*"
 widestring = "*"
 
+[target.'cfg(windows)'.build-dependencies]
+winres = "*"
+
 [[bin]]
 name = "ew"
+path = "src/main.rs"

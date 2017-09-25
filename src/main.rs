@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 #[cfg(unix)]
 extern crate libc;
 #[cfg(windows)]

@@ -8,9 +8,7 @@ build = "build.rs"
 libc = "*"
 
 [target.'cfg(windows)'.dependencies]
-winapi = "*"
-kernel32-sys = "*"
-user32-sys = "*"
+winapi = { version = "^0.3.6", features = ["processthreadsapi", "psapi", "winuser"] }
 widestring = "*"
 
 [target.'cfg(windows)'.build-dependencies]

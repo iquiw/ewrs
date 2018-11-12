@@ -5,10 +5,6 @@ extern crate libc;
 #[cfg(windows)]
 extern crate winapi;
 #[cfg(windows)]
-extern crate kernel32;
-#[cfg(windows)]
-extern crate user32;
-#[cfg(windows)]
 extern crate widestring;
 
 use std::ffi::OsString;

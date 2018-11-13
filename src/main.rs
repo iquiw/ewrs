@@ -7,6 +7,8 @@ extern crate winapi;
 #[cfg(windows)]
 extern crate widestring;
 
+extern crate dirs;
+
 use std::ffi::OsString;
 
 mod emacs;

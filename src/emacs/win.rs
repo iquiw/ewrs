@@ -1,4 +1,3 @@
-use std::env;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -96,7 +95,7 @@ fn get_process_path(pid: DWORD) -> PathBuf {
 }
 
 fn read_pid_from_server_file() -> Option<DWORD> {
-    let home = env::home_dir().expect("HOME is not set");
+    let home = dirs::home_dir().expect("HOME is not set");
 
     let mut p = PathBuf::from(home);
     p.push(".emacs.d");

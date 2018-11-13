@@ -17,3 +17,6 @@ winres = "*"
 [[bin]]
 name = "ew"
 path = "src/main.rs"
+
+[dependencies]
+dirs = "^1.0.4"

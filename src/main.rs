@@ -3,22 +3,20 @@
 #[cfg(unix)]
 extern crate libc;
 #[cfg(windows)]
-extern crate winapi;
-#[cfg(windows)]
 extern crate widestring;
+#[cfg(windows)]
+extern crate winapi;
 
 extern crate dirs;
 
 use std::ffi::OsString;
 
 mod emacs;
-use emacs::OSEmacs;
 use emacs::common::Emacs;
+use emacs::OSEmacs;
 
 fn main() {
-    let args: Vec<OsString> = std::env::args_os()
-        .skip(1)
-        .collect();
+    let args: Vec<OsString> = std::env::args_os().skip(1).collect();
 
     let emacs = OSEmacs::new();
 

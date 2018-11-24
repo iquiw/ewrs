@@ -1,5 +1,5 @@
 use std::ffi::OsStr;
-use std::io::{Error, ErrorKind, Result, Write, stderr};
+use std::io::{stderr, Error, ErrorKind, Result, Write};
 use std::path::{Path, PathBuf};
 
 use libc::{fork, getuid, setsid};
@@ -9,8 +9,7 @@ use emacs::common::Emacs;
 const EMACS_CMD: &'static str = "emacs";
 const EMACSCLI_CMD: &'static str = "emacsclient";
 
-pub struct UnixEmacs {
-}
+pub struct UnixEmacs {}
 
 impl Emacs for UnixEmacs {
     fn new() -> Self {
@@ -35,7 +34,8 @@ impl Emacs for UnixEmacs {
     }
 
     fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()>
-        where S: AsRef<OsStr>
+    where
+        S: AsRef<OsStr>,
     {
         unsafe {
             let pid = fork();

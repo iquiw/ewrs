@@ -68,7 +68,14 @@ pub trait Emacs {
         S: AsRef<OsStr>,
     {
         let mut command = Self::new_command(path);
-        command.arg("-f").arg("server-start").args(args).spawn()
+        let cmd = command.arg("-f").arg("server-start").args(args);
+        if args.len() > 0 {
+            cmd
+        } else if let Some(home_dir) = dirs::home_dir() {
+            cmd.current_dir(&home_dir)
+        } else {
+            cmd
+        }.spawn()
     }
 
     fn show_message(msg: &str);

@@ -1,8 +1,13 @@
 use std::env;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::io::{Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
+
+pub struct Options {
+    pub wait: bool,
+    pub args: Vec<OsString>,
+}
 
 pub trait Emacs {
     fn new() -> Self;
@@ -18,7 +23,8 @@ pub trait Emacs {
                 } else {
                     None
                 }
-            }).unwrap_or_else(|| PathBuf::from(self.emacs_cmd()))
+            })
+            .unwrap_or_else(|| PathBuf::from(self.emacs_cmd()))
     }
 
     fn is_server_running(&self) -> Option<PathBuf>;
@@ -27,17 +33,19 @@ pub trait Emacs {
         Command::new(path)
     }
 
-    fn run_client<S>(&self, path: &Path, args: &[S]) -> Result<()>
-    where
-        S: AsRef<OsStr>,
+    fn run_client(&self, path: &Path, opts: &Options) -> Result<()>
     {
+        let args = &opts.args;
         let mut command = Self::new_command(PathBuf::from(path));
         if args.is_empty() {
             command
                 .arg("-e")
                 .arg("(select-frame-set-input-focus (selected-frame))");
         } else {
-            command.arg("-n").args(args);
+            if !opts.wait {
+                command.arg("-n");
+            }
+            command.args(args);
         }
         let status = command.status()?;
         if status.success() {
@@ -50,7 +58,8 @@ pub trait Emacs {
                         ErrorKind::Interrupted,
                         format!("{}: process exited by signal", path.display()),
                     )
-                }).and_then(|code| {
+                })
+                .and_then(|code| {
                     Err(Error::new(
                         ErrorKind::Other,
                         format!("{}: process exited with code {}", path.display(), code),
@@ -75,7 +84,8 @@ pub trait Emacs {
             cmd.current_dir(&home_dir)
         } else {
             cmd
-        }.spawn()
+        }
+        .spawn()
     }
 
     fn show_message(msg: &str);

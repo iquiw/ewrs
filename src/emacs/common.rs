@@ -1,13 +1,10 @@
 use std::env;
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsStr;
 use std::io::{Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
 
-pub struct Options {
-    pub wait: bool,
-    pub args: Vec<OsString>,
-}
+use super::options::Options;
 
 pub trait Emacs {
     fn new() -> Self;
@@ -33,8 +30,7 @@ pub trait Emacs {
         Command::new(path)
     }
 
-    fn run_client(&self, path: &Path, opts: &Options) -> Result<()>
-    {
+    fn run_client(&self, path: &Path, opts: &Options) -> Result<()> {
         let args = &opts.args;
         let mut command = Self::new_command(PathBuf::from(path));
         if args.is_empty() {

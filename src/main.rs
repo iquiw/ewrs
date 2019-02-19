@@ -9,32 +9,12 @@ extern crate winapi;
 
 extern crate dirs;
 
-use std::env::{args_os, ArgsOs};
+use std::env::args_os;
 
 mod emacs;
-use emacs::common::{Emacs, Options};
+use emacs::common::Emacs;
+use emacs::options::Options;
 use emacs::OSEmacs;
-
-impl Options {
-    fn parse(args: ArgsOs) -> Self {
-        let mut wait = false;
-        let mut rest = vec![];
-        for arg in args.skip(1) {
-            {
-                let s = arg.to_string_lossy();
-                if s == "-w" {
-                    wait = true;
-                    continue;
-                }
-            }
-            rest.push(arg);
-        }
-        Options {
-            wait: wait,
-            args: rest,
-        }
-    }
-}
 
 fn main() {
     let opts = Options::parse(args_os());

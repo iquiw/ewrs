@@ -1,4 +1,5 @@
 pub mod common;
+pub mod options;
 #[cfg(unix)]
 mod unix;
 #[cfg(windows)]

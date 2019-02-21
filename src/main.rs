@@ -25,7 +25,7 @@ fn main() {
         Some(path) => emacs.run_client(&path, &opts),
         None => {
             let path = emacs.find_path();
-            emacs.run_server(&path, &opts.args)
+            emacs.run_server(&path, &opts)
         }
     };
     if let Err(err) = result {

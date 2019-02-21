@@ -42,7 +42,8 @@ impl Emacs for WinEmacs {
                     } else {
                         None
                     }
-                }).map(|p| {
+                })
+                .map(|p| {
                     let mut pb = p.to_path_buf();
                     pb.push(EMACSCLI_CMD);
                     pb
@@ -59,7 +60,7 @@ impl Emacs for WinEmacs {
         command
     }
 
-    fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()>
+    fn run_server_os<S>(&self, path: &Path, args: &[S]) -> Result<()>
     where
         S: AsRef<OsStr>,
     {

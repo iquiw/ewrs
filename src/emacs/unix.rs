@@ -33,7 +33,7 @@ impl Emacs for UnixEmacs {
         }
     }
 
-    fn run_server<S>(&self, path: &Path, args: &[S]) -> Result<()>
+    fn run_server_os<S>(&self, path: &Path, args: &[S]) -> Result<()>
     where
         S: AsRef<OsStr>,
     {
@@ -46,7 +46,8 @@ impl Emacs for UnixEmacs {
             }
             let _ = setsid();
         }
-        UnixEmacs::run_server_cmd(path, args).map(|_| ())
+        UnixEmacs::run_server_cmd(path, args).map(|_| ())?;
+        std::process::exit(0);
     }
 
     fn show_message(msg: &str) {

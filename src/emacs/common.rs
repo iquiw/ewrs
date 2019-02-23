@@ -37,6 +37,7 @@ pub trait Emacs {
         let mut command = Self::new_command(PathBuf::from(path));
         if args.is_empty() {
             command
+                .arg("-u")
                 .arg("-e")
                 .arg("(select-frame-set-input-focus (selected-frame))");
         } else {

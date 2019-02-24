@@ -19,5 +19,9 @@ winres = "*"
 name = "ew"
 path = "src/main.rs"
 
+[[bin]]
+name = "ew-w"
+path = "src/main-w.rs"
+
 [dependencies]
 dirs = "^1.0.4"

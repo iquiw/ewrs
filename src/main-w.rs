@@ -5,7 +5,9 @@ use std::env::args_os;
 use ewrs::emacs::options::Options;
 
 fn main() {
-    let opts = Options::parse(args_os());
+    let mut opts = Options::default();
+    opts.wait = true;
+    opts.args = args_os().skip(1).collect();
 
     ewrs::run(&opts);
 }

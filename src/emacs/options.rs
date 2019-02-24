@@ -1,7 +1,7 @@
 use std::ffi::OsStr;
 use std::ffi::OsString;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Options {
     pub wait: bool,
     pub args: Vec<OsString>,

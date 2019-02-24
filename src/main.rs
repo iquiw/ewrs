@@ -1,14 +1,5 @@
 #![windows_subsystem = "windows"]
 
-#[cfg(unix)]
-extern crate libc;
-#[cfg(windows)]
-extern crate widestring;
-#[cfg(windows)]
-extern crate winapi;
-
-extern crate dirs;
-
 use std::env::args_os;
 
 mod emacs;

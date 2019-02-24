@@ -16,7 +16,7 @@ use winapi::um::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
 use winapi::um::winuser::MessageBoxW;
 use winapi::um::winuser::MB_OK;
 
-use emacs::common::Emacs;
+use super::common::Emacs;
 
 const EMACS_CMD: &'static str = "runemacs.exe";
 const EMACSCLI_CMD: &'static str = "emacsclientw.exe";

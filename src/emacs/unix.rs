@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use libc::{fork, getuid, setsid};
 
-use emacs::common::Emacs;
+use super::common::Emacs;
 
 const EMACS_CMD: &'static str = "emacs";
 const EMACSCLI_CMD: &'static str = "emacsclient";

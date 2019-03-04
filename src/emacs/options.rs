@@ -4,16 +4,11 @@ use std::process::Command;
 
 #[derive(Debug, PartialEq)]
 pub struct ElispCommand {
-    opt: &'static str,
-    name: &'static str,
     elisp: &'static str,
+    dir: Option<OsString>,
 }
 
-const ELISP_COMMANDS: &[&ElispCommand] = &[&ElispCommand {
-    opt: "-m",
-    name: "magit",
-    elisp: "(magit-status)",
-}];
+const ELISP_OPTIONS: &[(&'static str, &'static str)] = &[("-m", "(magit-status)")];
 
 #[derive(Debug, PartialEq)]
 pub struct StandardOptions {
@@ -24,7 +19,7 @@ pub struct StandardOptions {
 #[derive(Debug, PartialEq)]
 pub enum Options {
     Standard(StandardOptions),
-    Elisp(&'static ElispCommand),
+    Elisp(ElispCommand),
 }
 
 impl Options {
@@ -42,18 +37,25 @@ impl Options {
     {
         let mut wait = false;
         let mut rest = vec![];
-        for arg in args.skip(1) {
-            {
-                let s = arg.as_ref().to_string_lossy();
-                if let Some(elisp) = ELISP_COMMANDS.iter().find(|x| s == x.opt) {
-                    return Options::Elisp(elisp);
-                }
-                if s == "-w" {
-                    wait = true;
-                    continue;
-                }
+        let v: Vec<S> = args.skip(1).collect();
+        for i in 0..v.len() {
+            let s = v[i].as_ref().to_os_string();
+            if let Some(eopt) = ELISP_OPTIONS.iter().find(|x| s == x.0) {
+                let dir = if i < v.len() - 1 {
+                    Some(v[i + 1].as_ref().to_os_string())
+                } else {
+                    None
+                };
+                return Options::Elisp(ElispCommand {
+                    elisp: eopt.1,
+                    dir: dir,
+                });
             }
-            rest.push(arg.as_ref().to_os_string());
+            if s == "-w" {
+                wait = true;
+                continue;
+            }
+            rest.push(s);
         }
         Options::Standard(StandardOptions {
             wait: wait,
@@ -86,6 +88,9 @@ impl CommandModifier for ElispCommand {
             "(progn (select-frame-set-input-focus (selected-frame)) {})",
             self.elisp
         ));
+        if let Some(dir) = &self.dir {
+            cmd.current_dir(dir);
+        }
     }
 }
 
@@ -161,5 +166,29 @@ mod tests {
             Options::parse(args.iter()),
             Options::explicit(true, vec![OsString::from("arg1"), OsString::from("arg2")])
         );
+    }
+
+    #[test]
+    fn test_parse_elisp_magit_without_dir() {
+        let args: Vec<&str> = vec!["prog", "-m"];
+        assert_eq!(
+            Options::parse(args.iter()),
+            Options::Elisp(ElispCommand {
+                elisp: "(magit-status)",
+                dir: None,
+            })
+        )
+    }
+
+    #[test]
+    fn test_parse_elisp_magit_with_dir() {
+        let args: Vec<&str> = vec!["prog", "-m", "dir"];
+        assert_eq!(
+            Options::parse(args.iter()),
+            Options::Elisp(ElispCommand {
+                elisp: "(magit-status)",
+                dir: Some(OsString::from("dir")),
+            })
+        )
     }
 }

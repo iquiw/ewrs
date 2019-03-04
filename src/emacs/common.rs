@@ -6,7 +6,7 @@ use std::process::{Child, Command};
 use std::thread;
 use std::time::Duration;
 
-use super::options::Options;
+use super::options::{CommandModifier, Options};
 
 pub trait Emacs {
     fn new() -> Self;
@@ -32,20 +32,9 @@ pub trait Emacs {
         Command::new(path)
     }
 
-    fn run_client(&self, path: &Path, opts: &Options) -> Result<()> {
-        let args = &opts.args;
+    fn run_client(&self, path: &Path, modifier: &CommandModifier) -> Result<()> {
         let mut command = Self::new_command(PathBuf::from(path));
-        if args.is_empty() {
-            command
-                .arg("-u")
-                .arg("-e")
-                .arg("(select-frame-set-input-focus (selected-frame))");
-        } else {
-            if !opts.wait {
-                command.arg("-n");
-            }
-            command.args(args);
-        }
+        modifier.modify(&mut command);
         let status = command.status()?;
         if status.success() {
             Ok(())
@@ -68,13 +57,13 @@ pub trait Emacs {
     }
 
     fn run_server(&self, path: &Path, opts: &Options) -> Result<()> {
-        if opts.wait {
+        if opts.is_with_client() {
             self.run_server_os::<String>(&path, &[])?;
             let duration = Duration::from_secs(1);
             for _ in &[1..10] {
                 thread::sleep(duration);
                 if let Some(pathc) = self.is_server_running() {
-                    return self.run_client(&pathc, &opts);
+                    return self.run_client(&pathc, opts);
                 }
             }
             Err(Error::new(
@@ -82,7 +71,7 @@ pub trait Emacs {
                 "Timed out to wait for Emacs server",
             ))
         } else {
-            self.run_server_os(&path, &opts.args)
+            self.run_server_os(&path, &opts.args())
         }
     }
 

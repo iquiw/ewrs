@@ -20,6 +20,7 @@ pub struct StandardOptions {
 pub enum Options {
     Standard(StandardOptions),
     Elisp(ElispCommand),
+    Help,
 }
 
 impl Options {
@@ -38,6 +39,12 @@ impl Options {
         let mut wait = false;
         let mut rest = vec![];
         let v: Vec<S> = args.skip(1).collect();
+        if v.iter().any(|arg| {
+            let s = arg.as_ref();
+            s == "--help" || s == "-h"
+        }) {
+            return Options::Help;
+        }
         for i in 0..v.len() {
             let s = v[i].as_ref().to_os_string();
             if let Some(eopt) = ELISP_OPTIONS.iter().find(|x| s == x.0) {
@@ -115,6 +122,7 @@ impl CommandModifier for Options {
         match self {
             Options::Standard(opts) => opts.modify(cmd),
             Options::Elisp(ec) => ec.modify(cmd),
+            Options::Help => {}
         }
     }
 }
@@ -190,5 +198,17 @@ mod tests {
                 dir: Some(OsString::from("dir")),
             })
         )
+    }
+
+    #[test]
+    fn test_parse_short_help() {
+        let args: Vec<&str> = vec!["prog", "-h"];
+        assert_eq!(Options::parse(args.iter()), Options::Help,)
+    }
+
+   #[test]
+    fn test_parse_long_help() {
+        let args: Vec<&str> = vec!["prog", "--help"];
+        assert_eq!(Options::parse(args.iter()), Options::Help,)
     }
 }

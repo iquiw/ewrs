@@ -60,7 +60,7 @@ pub trait Emacs {
         if opts.is_with_client() {
             self.run_server_os::<String>(&path, &[])?;
             let duration = Duration::from_secs(1);
-            for _ in &[1..10] {
+            for _ in 1..10 {
                 thread::sleep(duration);
                 if let Some(pathc) = self.is_server_running() {
                     return self.run_client(&pathc, opts);

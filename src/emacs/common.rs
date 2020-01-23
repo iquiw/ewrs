@@ -32,7 +32,7 @@ pub trait Emacs {
         Command::new(path)
     }
 
-    fn run_client(&self, path: &Path, modifier: &CommandModifier) -> Result<()> {
+    fn run_client(&self, path: &Path, modifier: &dyn CommandModifier) -> Result<()> {
         let mut command = Self::new_command(PathBuf::from(path));
         modifier.modify(&mut command);
         let status = command.status()?;

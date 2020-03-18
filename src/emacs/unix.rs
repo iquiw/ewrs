@@ -21,7 +21,15 @@ impl Emacs for UnixEmacs {
     }
 
     fn is_server_running(&self) -> Option<PathBuf> {
+        #[cfg(feature = "emacs27")]
+        let mut path = if let Some(dir) = std::env::var_os("XDG_RUNTIME_DIR") {
+            PathBuf::from(dir)
+        } else {
+            PathBuf::from("/tmp")
+        };
+        #[cfg(not(feature = "emacs27"))]
         let mut path = PathBuf::from("/tmp");
+
         unsafe {
             path.push(format!("emacs{}", getuid()));
         }

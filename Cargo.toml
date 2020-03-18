@@ -25,3 +25,7 @@ path = "src/main-w.rs"
 
 [dependencies]
 dirs = "^1.0.4"
+
+[features]
+default = ["emacs27"]
+emacs27 = []

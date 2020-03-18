@@ -70,13 +70,6 @@ impl Options {
         })
     }
 
-    pub fn is_with_client(&self) -> bool {
-        match self {
-            Options::Standard(opts) => opts.wait,
-            _ => true,
-        }
-    }
-
     pub fn args(&self) -> &[OsString] {
         match self {
             Options::Standard(opts) => &opts.args,

@@ -57,22 +57,18 @@ pub trait Emacs {
     }
 
     fn run_server(&self, path: &Path, opts: &Options) -> Result<()> {
-        if opts.is_with_client() {
-            self.run_server_os::<String>(&path, &[])?;
-            let duration = Duration::from_secs(1);
-            for _ in 1..10 {
-                thread::sleep(duration);
-                if let Some(pathc) = self.is_server_running() {
-                    return self.run_client(&pathc, opts);
-                }
+        self.run_server_os::<String>(&path, &[])?;
+        let duration = Duration::from_secs(1);
+        for _ in 1..10 {
+            thread::sleep(duration);
+            if let Some(pathc) = self.is_server_running() {
+                return self.run_client(&pathc, opts);
             }
-            Err(Error::new(
-                ErrorKind::Interrupted,
-                "Timed out to wait for Emacs server",
-            ))
-        } else {
-            self.run_server_os(&path, &opts.args())
         }
+        Err(Error::new(
+            ErrorKind::Interrupted,
+            "Timed out to wait for Emacs server",
+        ))
     }
 
     fn run_server_os<S>(&self, path: &Path, args: &[S]) -> Result<()>

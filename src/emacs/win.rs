@@ -2,7 +2,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::io::{Error, ErrorKind, Result};
-use std::mem;
+use std::mem::MaybeUninit;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::process::{Command, Stdio};
@@ -89,7 +89,7 @@ const U_MAX_PATH: DWORD = 32767;
 fn get_process_path(pid: DWORD) -> PathBuf {
     unsafe {
         let h = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-        let mut v: [u16; U_MAX_PATH as usize] = mem::uninitialized();
+        let mut v: [u16; U_MAX_PATH as usize] = MaybeUninit::uninit().assume_init();
         let nread = K32GetModuleFileNameExW(h, ptr::null_mut(), v.as_mut_ptr(), U_MAX_PATH);
         PathBuf::from(String::from_utf16_lossy(&v[0..(nread as usize)]))
     }

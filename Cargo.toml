@@ -9,7 +9,7 @@ edition = "2018"
 libc = "*"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { version = "^0.3.6", features = ["processthreadsapi", "psapi", "winuser"] }
+winapi = { version = "0.3.6", features = ["processthreadsapi", "psapi", "winuser"] }
 widestring = "*"
 
 [target.'cfg(windows)'.build-dependencies]

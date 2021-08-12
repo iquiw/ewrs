@@ -58,8 +58,8 @@ pub trait Emacs {
 
     fn run_server(&self, path: &Path, opts: &Options) -> Result<()> {
         self.run_server_os::<String>(path, &[])?;
-        let duration = Duration::from_secs(1);
-        for _ in 1..10 {
+        for i in 0..30 {
+            let duration = Duration::from_secs(i / 10 + 1);
             thread::sleep(duration);
             if let Some(pathc) = self.is_server_running() {
                 return self.run_client(&pathc, opts);

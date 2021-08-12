@@ -8,7 +8,7 @@ pub struct ElispCommand {
     dir: Option<OsString>,
 }
 
-const ELISP_OPTIONS: &[(&'static str, &'static str)] = &[("-m", "(magit-status)")];
+const ELISP_OPTIONS: &[(&str, &str)] = &[("-m", "(magit-status)")];
 
 #[derive(Debug, PartialEq)]
 pub struct StandardOptions {
@@ -25,10 +25,7 @@ pub enum Options {
 
 impl Options {
     pub fn explicit(wait: bool, args: Vec<OsString>) -> Self {
-        Options::Standard(StandardOptions {
-            wait: wait,
-            args: args,
-        })
+        Options::Standard(StandardOptions { wait, args })
     }
 
     pub fn parse<I, S>(args: I) -> Self
@@ -53,10 +50,7 @@ impl Options {
                 } else {
                     None
                 };
-                return Options::Elisp(ElispCommand {
-                    elisp: eopt.1,
-                    dir: dir,
-                });
+                return Options::Elisp(ElispCommand { elisp: eopt.1, dir });
             }
             if s == "-w" {
                 wait = true;
@@ -64,10 +58,7 @@ impl Options {
             }
             rest.push(s);
         }
-        Options::Standard(StandardOptions {
-            wait: wait,
-            args: rest,
-        })
+        Options::Standard(StandardOptions { wait, args: rest })
     }
 
     pub fn args(&self) -> &[OsString] {
@@ -199,7 +190,7 @@ mod tests {
         assert_eq!(Options::parse(args.iter()), Options::Help,)
     }
 
-   #[test]
+    #[test]
     fn test_parse_long_help() {
         let args: Vec<&str> = vec!["prog", "--help"];
         assert_eq!(Options::parse(args.iter()), Options::Help,)

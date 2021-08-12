@@ -57,7 +57,7 @@ pub trait Emacs {
     }
 
     fn run_server(&self, path: &Path, opts: &Options) -> Result<()> {
-        self.run_server_os::<String>(&path, &[])?;
+        self.run_server_os::<String>(path, &[])?;
         let duration = Duration::from_secs(1);
         for _ in 1..10 {
             thread::sleep(duration);
@@ -81,7 +81,7 @@ pub trait Emacs {
     {
         let mut command = Self::new_command(path);
         let cmd = command.arg("-f").arg("server-start").args(args);
-        if args.len() > 0 {
+        if !args.is_empty() {
             cmd
         } else if let Some(home_dir) = dirs::home_dir() {
             cmd.current_dir(&home_dir)

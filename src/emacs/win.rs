@@ -2,7 +2,6 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::io::{Error, ErrorKind, Result};
-use std::mem::MaybeUninit;
 use std::path::{Path, PathBuf};
 use std::process;
 use std::process::{Command, Stdio};
@@ -18,8 +17,8 @@ use winapi::um::winuser::MB_OK;
 
 use super::common::Emacs;
 
-const EMACS_CMD: &'static str = "runemacs.exe";
-const EMACSCLI_CMD: &'static str = "emacsclientw.exe";
+const EMACS_CMD: &str = "runemacs.exe";
+const EMACSCLI_CMD: &str = "emacsclientw.exe";
 
 pub struct WinEmacs {}
 
@@ -89,16 +88,16 @@ const U_MAX_PATH: DWORD = 32767;
 fn get_process_path(pid: DWORD) -> PathBuf {
     unsafe {
         let h = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-        let mut v: [u16; U_MAX_PATH as usize] = MaybeUninit::uninit().assume_init();
+        let mut v: Vec<u16> = Vec::with_capacity(U_MAX_PATH as usize);
         let nread = K32GetModuleFileNameExW(h, ptr::null_mut(), v.as_mut_ptr(), U_MAX_PATH);
-        PathBuf::from(String::from_utf16_lossy(&v[0..(nread as usize)]))
+        v.set_len(nread as usize);
+        PathBuf::from(String::from_utf16_lossy(&v))
     }
 }
 
 fn read_pid_from_server_file() -> Option<DWORD> {
-    let home = dirs::home_dir().expect("HOME is not set");
+    let mut p = dirs::home_dir().expect("HOME is not set");
 
-    let mut p = PathBuf::from(home);
     p.push(".emacs.d");
     p.push("server");
     p.push("server");
@@ -128,7 +127,7 @@ where
         .ok_or_else(|| Error::new(ErrorKind::InvalidData, "No pid part"))
         .and_then(|s| {
             s.parse()
-                .or_else(|_| Err(Error::new(ErrorKind::InvalidData, "Not a number")))
+                .map_err(|_| Error::new(ErrorKind::InvalidData, "Not a number"))
         })
 }
 

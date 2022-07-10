@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::ffi::OsStr;
 use std::io::{stderr, Error, ErrorKind, Result, Write};
 use std::path::{Path, PathBuf};
@@ -7,18 +8,17 @@ use libc::{fork, getuid, setsid};
 
 use super::common::Emacs;
 
-const EMACS_CMD: &'static str = "emacs";
-const EMACSCLI_CMD: &'static str = "emacsclient";
+const EMACS_CMD: &str = "emacs";
+const EMACSCLI_CMD: &str = "emacsclient";
 
 pub struct UnixEmacs {}
 
 impl UnixEmacs {
     #[cfg(feature = "emacs27")]
     fn emacs_server_dir() -> PathBuf {
-        if let Some(dir) = runtime_dir() {
-            let mut path = PathBuf::from(dir);
-            path.push("emacs");
-            path
+        if let Some(mut dir) = runtime_dir() {
+            dir.push("emacs");
+            dir
         } else {
             let mut path = PathBuf::from("/tmp");
             unsafe {
@@ -63,10 +63,10 @@ impl Emacs for UnixEmacs {
     {
         unsafe {
             let pid = fork();
-            if pid > 0 {
-                return Ok(());
-            } else if pid < 0 {
-                return Err(Error::new(ErrorKind::Other, "fork failed"));
+            match pid.cmp(&0) {
+                Ordering::Greater => return Ok(()),
+                Ordering::Less => return Err(Error::new(ErrorKind::Other, "fork failed")),
+                Ordering::Equal => {}
             }
             let _ = setsid();
         }

@@ -3,7 +3,7 @@ name = "ewrs"
 version = "0.6.1"
 authors = ["Iku Iwasa <iku.iwasa@gmail.com>"]
 build = "build.rs"
-edition = "2018"
+edition = "2021"
 
 [target.'cfg(unix)'.dependencies]
 libc = "*"

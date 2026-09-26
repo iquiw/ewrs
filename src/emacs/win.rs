@@ -5,15 +5,11 @@ use std::io::{Error, ErrorKind, Result};
 use std::path::{Path, PathBuf};
 use std::process;
 use std::process::{Command, Stdio};
-use std::ptr;
 
-use widestring::WideCString;
-use winapi::shared::minwindef::{DWORD, FALSE};
-use winapi::um::processthreadsapi::OpenProcess;
-use winapi::um::psapi::K32GetModuleFileNameExW;
-use winapi::um::winnt::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ};
-use winapi::um::winuser::MessageBoxW;
-use winapi::um::winuser::MB_OK;
+use windows::core::{HSTRING, PCWSTR};
+use windows::Win32::System::Threading::{PROCESS_QUERY_INFORMATION, PROCESS_VM_READ, OpenProcess};
+use windows::Win32::UI::WindowsAndMessaging::{MB_OK, MessageBoxW};
+use windows::Win32::System::ProcessStatus::GetModuleFileNameExW;
 
 use super::common::Emacs;
 
@@ -33,8 +29,8 @@ impl Emacs for WinEmacs {
 
     fn is_server_running(&self) -> Option<PathBuf> {
         read_pid_from_server_file().and_then(|pid| {
-            let path = get_process_path(pid);
-            path.file_name()
+            let path_opt = get_process_path(pid);
+            path_opt.and_then(|path| path.file_name()
                 .and_then(|name| {
                     if name == "emacs.exe" {
                         path.parent()
@@ -46,7 +42,7 @@ impl Emacs for WinEmacs {
                     let mut pb = p.to_path_buf();
                     pb.push(EMACSCLI_CMD);
                     pb
-                })
+                }))
         })
     }
 
@@ -71,31 +67,32 @@ impl Emacs for WinEmacs {
     }
 
     fn show_message(msg: &str) {
-        let m = str_to_widec(msg).into_raw();
-        let p = str_to_widec("ew").into_raw();
+        let m = HSTRING::from(msg);
+        let p = HSTRING::from("ew");
         unsafe {
-            let _ = MessageBoxW(ptr::null_mut(), m, p, MB_OK);
+            let _ = MessageBoxW(None, PCWSTR::from_raw(m.as_ptr()), PCWSTR::from_raw(p.as_ptr()), MB_OK);
         }
     }
 }
 
-fn str_to_widec(s: &str) -> WideCString {
-    WideCString::from_str(s).expect("Message contains nul")
-}
+const U_MAX_PATH: usize = 32767;
 
-const U_MAX_PATH: DWORD = 32767;
-
-fn get_process_path(pid: DWORD) -> PathBuf {
+fn get_process_path(pid: u32) -> Option<PathBuf> {
     unsafe {
-        let h = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-        let mut v: Vec<u16> = Vec::with_capacity(U_MAX_PATH as usize);
-        let nread = K32GetModuleFileNameExW(h, ptr::null_mut(), v.as_mut_ptr(), U_MAX_PATH);
-        v.set_len(nread as usize);
-        PathBuf::from(String::from_utf16_lossy(&v))
+        let result = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, false, pid);
+        if let Ok(h) = result {
+            let mut v: Vec<u16> = vec![0; U_MAX_PATH];
+            let nread = GetModuleFileNameExW(Some(h), None, &mut v);
+            if nread > 0 {
+                v.set_len(nread as usize);
+                return Some(PathBuf::from(String::from_utf16_lossy(&v)));
+            }
+        }
+        None
     }
 }
 
-fn read_pid_from_server_file() -> Option<DWORD> {
+fn read_pid_from_server_file() -> Option<u32> {
     let mut p = dirs::home_dir().expect("HOME is not set");
 
     p.push(".emacs.d");
@@ -114,7 +111,7 @@ fn read_pid_from_server_file() -> Option<DWORD> {
     }
 }
 
-fn read_pid<P>(p: P) -> Result<DWORD>
+fn read_pid<P>(p: P) -> Result<u32>
 where
     P: AsRef<Path>,
 {

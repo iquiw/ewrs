@@ -48,8 +48,7 @@ pub trait Emacs {
                     )
                 })
                 .and_then(|code| {
-                    Err(Error::new(
-                        ErrorKind::Other,
+                    Err(Error::other(
                         format!("{}: process exited with code {}", path.display(), code),
                     ))
                 })

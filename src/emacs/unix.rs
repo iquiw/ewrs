@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::ffi::OsStr;
-use std::io::{stderr, Error, ErrorKind, Result, Write};
+use std::io::{stderr, Error, Result, Write};
 use std::path::{Path, PathBuf};
 
 use dirs::runtime_dir;
@@ -65,7 +65,7 @@ impl Emacs for UnixEmacs {
             let pid = fork();
             match pid.cmp(&0) {
                 Ordering::Greater => return Ok(()),
-                Ordering::Less => return Err(Error::new(ErrorKind::Other, "fork failed")),
+                Ordering::Less => return Err(Error::other("fork failed")),
                 Ordering::Equal => {}
             }
             let _ = setsid();

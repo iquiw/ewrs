@@ -24,7 +24,7 @@ name = "ew-w"
 path = "src/main-w.rs"
 
 [dependencies]
-dirs = "^4.0.0"
+dirs = "^7.0.0"
 
 [features]
 default = ["emacs27"]
